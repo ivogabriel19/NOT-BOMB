@@ -3,14 +3,14 @@
  *                 Arduino UNO con display 7 segmentos CA
 */
 
-#define a 11 //16
-#define b 10 //05
-#define c 8 //04
-#define d 7 //00
-#define e 13 //02
-#define f 12 //14
-#define g 9 //12
-#define p 6 //13
+#define a 16 //D0
+#define b  5 //D1
+#define c  4 //D2
+#define d  0 //D3
+#define e  2 //D4
+#define f 14 //D5
+#define g 12 //D6
+#define p 13 //D7
 
 #define INTERVAL 1000
 
