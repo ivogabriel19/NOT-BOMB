@@ -65,11 +65,8 @@ void segundero(){
   Serial.print("Numero " + String(num) + ": {");
   for (int pin=0 ; pin < (sizeof(pines)/sizeof(pines[0]))-1 ; pin++){
     digitalWrite(pines[pin], digitos[num][pin] ^ common);
-    Serial.print(String(digitos[num][pines[pin]]) + ", ");
+    //Serial.print(String(digitos[num][pines[pin]]) + ", ");
     }
-  //for (int pin=0 ; pin < (sizeof(pines)/sizeof(pines[0]))-1 ; pin++){
-  //    Serial.print(digitos[num][pin]);
-  //  }
   Serial.println("}");
    
   num++;
