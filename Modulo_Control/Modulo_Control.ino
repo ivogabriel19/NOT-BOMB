@@ -25,10 +25,11 @@
 #define salto 200
 
 bool flag_stop = false;
+unsigned long previousMillis = 0;
 
 int ctrlSegundero = 1000; //Variable control actualizacion del segundero
 
-int contador[] = {0, 0}; // numeros del reloj -> {unidadSegundos , decenaSegundos}
+int contador[] = {9, 9}; // numeros del reloj -> {unidadSegundos , decenaSegundos}
 
 const int pinesDig[] = {dD, dC, dB, dA};  //pines escritura segmentos
 const int pinesAn[] = {anC, anB, anA};    //pines escritura anodos segmentos
@@ -58,6 +59,7 @@ void setup() {
   for(int i = 0; i < (sizeof(pinesAn)/sizeof(pinesAn[0])) ; i++){
     pinMode(pinesAn[i], OUTPUT);
   }
+
   pinMode(seg ,OUTPUT);
   pinMode(wireOK, INPUT_PULLUP);
   pinMode(wire1, INPUT_PULLUP);
@@ -67,17 +69,17 @@ void setup() {
 }
 
 void loop() {
-  unsigned static long previousMillis = 0;
-  unsigned long currentMillis = millis();
 
   if(!flag_stop){
-    checkTime():  //Segundero
+    checkTime();  //Segundero
     checkWires(); //Deteccion de cables
   }
+
   refresh();    //Refresco de displays
 }
 
 void checkTime(){
+  unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= ctrlSegundero) {
       previousMillis = currentMillis;
       segundero();
@@ -91,12 +93,14 @@ void segundero(){
   LEDstate = !LEDstate;
 
   //incremento reloj
-  contador[0]++;
-  if(contador[0]>9) {
-    contador[0]=0;
-    contador[1]++;
-    if(contador[1]>9){
+  contador[0]--;
+  if(contador[0]<0) {
+    contador[0]=9;
+    contador[1]--;
+    if(contador[1]<0){
+      contador[0]=0;
       contador[1]=0;
+      flag_stop = true;
     }
   }
   //Serial.println("blink_segundero() " + String(num));
@@ -109,7 +113,7 @@ void refresh(){//Escribir displays
     for (int anodo=0 ; anodo < (sizeof(pinesAn)/sizeof(pinesAn[0])) ; anodo++){ //3 vueltas
       digitalWrite(pinesAn[anodo], bcdAn[dig][anodo]);
     }
- 
+
     //escribo los segmentos correspondientes (declarados en pinesDig[])
     for (int pin=0 ; pin < (sizeof(pinesDig)/sizeof(pinesDig[0])) ; pin++){ //4vueltas
       digitalWrite(pinesDig[pin], bcdDig[contador[dig]][pin]);
