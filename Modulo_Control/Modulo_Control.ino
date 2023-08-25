@@ -16,8 +16,17 @@
 
 #define seg 2 //Built in LED
 
-int ctrlSegundero = 1000; //Variable control actualizacion del segundero
+#define wireOK 35
+#define wire1 32
+#define wire2 33
+#define wire3 25
+#define wire4 26
 
+#define salto 200
+
+bool flag_stop = false;
+
+int ctrlSegundero = 1000; //Variable control actualizacion del segundero
 
 int contador[] = {0, 0}; // numeros del reloj -> {unidadSegundos , decenaSegundos}
 
@@ -34,7 +43,7 @@ const int bcdDig[][4] = { //{D, C, B, A}
     {0,1,1,1}, //7
     {1,0,0,0}, //8
     {1,0,0,1}  //9
-  };
+};
 const int bcdAn[][3] = {   //{C, B, A}
   {0, 0, 0},
   {0, 0, 1},
@@ -45,33 +54,38 @@ void setup() {
   Serial.begin(115200);
   for(int i = 0; i < (sizeof(pinesDig)/sizeof(pinesDig[0])) ; i++){
     pinMode(pinesDig[i], OUTPUT);
-    }
+  }
   for(int i = 0; i < (sizeof(pinesAn)/sizeof(pinesAn[0])) ; i++){
-  pinMode(pinesAn[i], OUTPUT);
+    pinMode(pinesAn[i], OUTPUT);
   }
   pinMode(seg ,OUTPUT);
+  pinMode(wireOK, INPUT_PULLUP);
+  pinMode(wire1, INPUT_PULLUP);
+  pinMode(wire2, INPUT_PULLUP);
+  pinMode(wire3, INPUT_PULLUP);
+  pinMode(wire4, INPUT_PULLUP);
 }
 
 void loop() {
   unsigned static long previousMillis = 0;
   unsigned long currentMillis = millis();
 
-  //Segundero
-  if (currentMillis - previousMillis >= ctrlSegundero) {
-    previousMillis = currentMillis;
-    segundero();
+  if(!flag_stop){
+    checkTime():  //Segundero
+    checkWires(); //Deteccion de cables
   }
+  refresh();    //Refresco de displays
+}
 
-  refresh();
+void checkTime(){
+  if (currentMillis - previousMillis >= ctrlSegundero) {
+      previousMillis = currentMillis;
+      segundero();
+    }
 }
 
 void segundero(){
-
-  Serial.println("Segundero: " + String(ctrlSegundero));
-  ctrlSegundero-=10;
-  if(ctrlSegundero <= 0) ctrlSegundero = 50;
-
-  // blink segundero
+    // blink segundero
   static bool LEDstate = 0;
   digitalWrite(seg, LEDstate);
   LEDstate = !LEDstate;
@@ -83,31 +97,74 @@ void segundero(){
     contador[1]++;
     if(contador[1]>9){
       contador[1]=0;
-      }
     }
-  //Serial.println("blink_segundero() " + String(num));
   }
+  //Serial.println("blink_segundero() " + String(num));
+}
 
 void refresh(){//Escribir displays
   //Escribir cada digito del contador
   for(int dig=0 ; dig < (sizeof(contador)/sizeof(contador[0])) ; dig++){
     //Alimento el anodo correspondiente (declarados en pinesAn[])
-    //digitalWrite(anC, bcdAn[dig][0]);
-    //digitalWrite(anB, bcdAn[dig][1]);
-    //digitalWrite(anA, bcdAn[dig][2]);
-    for (int anodo=0 ; anodo < (sizeof(pinesAn)/sizeof(pinesAn[0])) ; anodo++){
+    for (int anodo=0 ; anodo < (sizeof(pinesAn)/sizeof(pinesAn[0])) ; anodo++){ //3 vueltas
       digitalWrite(pinesAn[anodo], bcdAn[dig][anodo]);
-      }
+    }
  
     //escribo los segmentos correspondientes (declarados en pinesDig[])
-    for (int pin=0 ; pin < (sizeof(pinesDig)/sizeof(pinesDig[0])) ; pin++){
+    for (int pin=0 ; pin < (sizeof(pinesDig)/sizeof(pinesDig[0])) ; pin++){ //4vueltas
       digitalWrite(pinesDig[pin], bcdDig[contador[dig]][pin]);
-      }
+    }
     
     //Apago los segmentos
     delay(1);
     for (int pin=0 ; pin < (sizeof(pinesDig)/sizeof(pinesDig[0])) ; pin++){
       digitalWrite(pinesDig[pin], HIGH);
+    }
+  }  
+}
+
+void checkWires(){
+  Serial.println("Segundero: " + String(ctrlSegundero));
+
+  static bool flag_wire1 = false;
+  static bool flag_wire2 = false;
+  static bool flag_wire3 = false;
+  static bool flag_wire4 = false;
+
+  if(!digitalRead(wireOK)){
+    flag_stop = true;
+    Serial.println("Stop!");
+    }
+
+  if(!flag_wire1){
+    if(!digitalRead(wire1)){
+        ctrlSegundero-=salto;
+        if(ctrlSegundero <= 0) ctrlSegundero = 50;
+        flag_wire1 = true;
       }
-   }  
+  }
+
+  if(!flag_wire2){
+    if(!digitalRead(wire2)){
+        ctrlSegundero-=salto;
+        if(ctrlSegundero <= 0) ctrlSegundero = 50;
+        flag_wire2 = true;
+      }
+  }
+
+  if(!flag_wire3){
+    if(!digitalRead(wire3)){
+        ctrlSegundero-=salto;
+        if(ctrlSegundero <= 0) ctrlSegundero = 50;
+        flag_wire3 = true;
+      }
+  }
+
+  if(!flag_wire4){
+    if(!digitalRead(wire4)){
+        ctrlSegundero-=salto;
+        if(ctrlSegundero <= 0) ctrlSegundero = 50;
+        flag_wire4 = true;
+      }
+  }
 }
