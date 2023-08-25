@@ -23,7 +23,7 @@ int contador[] = {0, 0}; // numeros del reloj -> {unidadSegundos , decenaSegundo
 
 const int pinesDig[] = {dD, dC, dB, dA};  //pines escritura segmentos
 const int pinesAn[] = {anC, anB, anA};    //pines escritura anodos segmentos
-const int bcdDig[][4] = {
+const int bcdDig[][4] = { //{D, C, B, A}
     {0,0,0,0}, //0
     {0,0,0,1}, //1
     {0,0,1,0}, //2
@@ -35,7 +35,7 @@ const int bcdDig[][4] = {
     {1,0,0,0}, //8
     {1,0,0,1}  //9
   };
-const int bcdAn[][3] = {
+const int bcdAn[][3] = {   //{C, B, A}
   {0, 0, 0},
   {0, 0, 1},
   {0, 1, 0}
@@ -68,7 +68,7 @@ void loop() {
 void segundero(){
 
   Serial.println("Segundero: " + String(ctrlSegundero));
-  ctrlSegundero-=50;
+  ctrlSegundero-=10;
   if(ctrlSegundero <= 0) ctrlSegundero = 50;
 
   // blink segundero
@@ -89,25 +89,25 @@ void segundero(){
   }
 
 void refresh(){//Escribir displays
-  //Escribir cada digito
-  for(int dig=0 ; dig < 2 ; dig++){
-    //Alimento el anodo correspondiente
-    digitalWrite(anA, bcdAn[dig][2]);
-    digitalWrite(anB, bcdAn[dig][1]);
-    digitalWrite(anC, bcdAn[dig][0]);
+  //Escribir cada digito del contador
+  for(int dig=0 ; dig < (sizeof(contador)/sizeof(contador[0])) ; dig++){
+    //Alimento el anodo correspondiente (declarados en pinesAn[])
+    //digitalWrite(anC, bcdAn[dig][0]);
+    //digitalWrite(anB, bcdAn[dig][1]);
+    //digitalWrite(anA, bcdAn[dig][2]);
+    for (int anodo=0 ; anodo < (sizeof(pinesAn)/sizeof(pinesAn[0])) ; anodo++){
+      digitalWrite(pinesAn[anodo], bcdAn[dig][anodo]);
+      }
  
-    //escribo los segmentos correspondientes
-    //Serial.print("Cuenta:" + String(dig2) + String(dig1) + " Digito 1 Numero " + String(dig1) + ": {");
+    //escribo los segmentos correspondientes (declarados en pinesDig[])
     for (int pin=0 ; pin < (sizeof(pinesDig)/sizeof(pinesDig[0])) ; pin++){
       digitalWrite(pinesDig[pin], bcdDig[contador[dig]][pin]);
-      //Serial.print(String(bcdDig[dig1][pin]) + ", ");
       }
-    //Serial.println("}");
     
     //Apago los segmentos
     delay(1);
     for (int pin=0 ; pin < (sizeof(pinesDig)/sizeof(pinesDig[0])) ; pin++){
-      digitalWrite(pinesDig[pin], 1);
+      digitalWrite(pinesDig[pin], HIGH);
       }
    }  
 }
