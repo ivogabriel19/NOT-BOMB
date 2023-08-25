@@ -29,7 +29,7 @@ unsigned long previousMillis = 0;
 
 int ctrlSegundero = 1000; //Variable control actualizacion del segundero
 
-int contador[] = {9, 9}; // numeros del reloj -> {unidadSegundos , decenaSegundos}
+int contador[] = {0, 9}; // numeros del reloj -> {unidadSegundos, decenaSegundos}
 
 const int pinesDig[] = {dD, dC, dB, dA};  //pines escritura segmentos
 const int pinesAn[] = {anC, anB, anA};    //pines escritura anodos segmentos
@@ -101,30 +101,50 @@ void segundero(){
       contador[0]=0;
       contador[1]=0;
       flag_stop = true;
+      //escribo los segmentos en 0 (declarados en pinesDig[])
+      for (int pin=0 ; pin < (sizeof(pinesDig)/sizeof(pinesDig[0])) ; pin++){ //4vueltas
+        digitalWrite(pinesDig[pin], bcdDig[0][pin]);
+      }
     }
   }
   //Serial.println("blink_segundero() " + String(num));
 }
 
 void refresh(){//Escribir displays
-  //Escribir cada digito del contador
-  for(int dig=0 ; dig < (sizeof(contador)/sizeof(contador[0])) ; dig++){
-    //Alimento el anodo correspondiente (declarados en pinesAn[])
-    for (int anodo=0 ; anodo < (sizeof(pinesAn)/sizeof(pinesAn[0])) ; anodo++){ //3 vueltas
-      digitalWrite(pinesAn[anodo], bcdAn[dig][anodo]);
-    }
 
-    //escribo los segmentos correspondientes (declarados en pinesDig[])
-    for (int pin=0 ; pin < (sizeof(pinesDig)/sizeof(pinesDig[0])) ; pin++){ //4vueltas
-      digitalWrite(pinesDig[pin], bcdDig[contador[dig]][pin]);
+  if(!flag_stop){ //Va por la actualizacion normal
+    //Escribir cada digito del contador
+    for(int dig=0 ; dig < (sizeof(contador)/sizeof(contador[0])) ; dig++){
+      
+      //Alimento el anodo correspondiente (declarados en pinesAn[])
+      for (int anodo=0 ; anodo < (sizeof(pinesAn)/sizeof(pinesAn[0])) ; anodo++){ //3 vueltas
+        digitalWrite(pinesAn[anodo], bcdAn[dig][anodo]);
+      }
+  
+      //escribo los segmentos correspondientes (declarados en pinesDig[])
+      for (int pin=0 ; pin < (sizeof(pinesDig)/sizeof(pinesDig[0])) ; pin++){ //4vueltas
+        digitalWrite(pinesDig[pin], bcdDig[contador[dig]][pin]);
+      }
+         
+      //Apago los segmentos
+      delay(1);
+      for (int pin=0 ; pin < (sizeof(pinesDig)/sizeof(pinesDig[0])) ; pin++){
+        digitalWrite(pinesDig[pin], HIGH);
+      }
     }
+  } else { //Si termino titila en 0
     
-    //Apago los segmentos
-    delay(1);
-    for (int pin=0 ; pin < (sizeof(pinesDig)/sizeof(pinesDig[0])) ; pin++){
-      digitalWrite(pinesDig[pin], HIGH);
+    while(true){
+      //Escribir cada digito del contador
+      // !!! el bcd7segmentos lo escribe la funcion que activa el flag_stop
+      for(int dig=0 ; dig < (sizeof(contador)/sizeof(contador[0])) ; dig++){
+        //Alimento cada anodo (declarados en pinesAn[])
+        for (int anodo=0 ; anodo < (sizeof(pinesAn)/sizeof(pinesAn[0])) ; anodo++){ //3 vueltas
+          digitalWrite(pinesAn[anodo], bcdAn[dig][anodo]);
+        }
+      }
     }
-  }  
+  }
 }
 
 void checkWires(){
