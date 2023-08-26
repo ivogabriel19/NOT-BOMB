@@ -3,6 +3,15 @@
  *                 ESP32 DevKit
 */
 
+#include "BluetoothSerial.h"
+
+#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
+#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
+#endif
+
+BluetoothSerial SerialBT;
+
+
 //pines escritura segmentos
 #define dA 16
 #define dB 17
@@ -53,6 +62,8 @@ const int bcdAn[][3] = {   //{C, B, A}
 
 void setup() {
   Serial.begin(115200);
+  SerialBT.begin("ESP32_Mod Control");
+  
   for(int i = 0; i < (sizeof(pinesDig)/sizeof(pinesDig[0])) ; i++){
     pinMode(pinesDig[i], OUTPUT);
   }
@@ -83,6 +94,7 @@ void checkTime(){
   if (currentMillis - previousMillis >= ctrlSegundero) {
       previousMillis = currentMillis;
       segundero();
+      SerialBT.println (flag_stop);
     }
 }
 
@@ -100,11 +112,7 @@ void segundero(){
     if(contador[1]<0){
       contador[0]=0;
       contador[1]=0;
-      flag_stop = true;
-      //escribo los segmentos en 0 (declarados en pinesDig[])
-      for (int pin=0 ; pin < (sizeof(pinesDig)/sizeof(pinesDig[0])) ; pin++){ //4vueltas
-        digitalWrite(pinesDig[pin], bcdDig[0][pin]);
-      }
+      tutifruti();
     }
   }
   //Serial.println("blink_segundero() " + String(num));
@@ -156,8 +164,7 @@ void checkWires(){
   static bool flag_wire4 = false;
 
   if(!digitalRead(wireOK)){
-    flag_stop = true;
-    Serial.println("Stop!");
+    tutifruti();
     }
 
   if(!flag_wire1){
@@ -190,5 +197,14 @@ void checkWires(){
         if(ctrlSegundero <= 0) ctrlSegundero = 50;
         flag_wire4 = true;
       }
+  }
+}
+
+void tutifruti(){ //canta basta para mi basta para todos
+  flag_stop = true;
+  Serial.println("Stop!");
+  //escribo los segmentos en 0 (declarados en pinesDig[])
+  for (int pin=0 ; pin < (sizeof(pinesDig)/sizeof(pinesDig[0])) ; pin++){ //4vueltas
+    digitalWrite(pinesDig[pin], bcdDig[0][pin]);
   }
 }
