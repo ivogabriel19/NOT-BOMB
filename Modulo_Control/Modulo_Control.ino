@@ -24,7 +24,7 @@ BluetoothSerial SerialBT;
 #define anC  2
 
 #define seg  2 //Built in LED
-#define dp   17
+#define dp   13 //17
 #define p1   22
 #define p2   23
 
@@ -109,14 +109,16 @@ void checkTime(){
   if (currentMillis - previousMillis >= ctrlSegundero) {
       previousMillis = currentMillis;
       segundero();
-      SerialBT.println (flag_stop);
+      SerialBT.println ("Stop: " + String(flag_stop));
+      SerialBT.println ("Millis: " + String(millis()));
+      SerialBT.println ("Segundero: " + String(ctrlSegundero));
     }
 }
 
 void segundero(){
     // blink segundero
   static bool LEDstate = 0;
-  digitalWrite(seg, LEDstate);
+  digitalWrite(p2 , LEDstate);
   LEDstate = !LEDstate;
 
   //decremento reloj
@@ -189,6 +191,7 @@ void checkWires(){
           salto*=err;                                                         // Aumenta la variable de ajuste del segundero (asi al siguiente error lo acelera mas)
           if(ctrlSegundero <= 0) ctrlSegundero = 50;                          // Si no queda mas para reducir lo fija en 50          
           //Serial.println(" Wire "+ String(wire) +" detected!");
+          SerialBT.println (" Wire "+ String(wire) +" detected!");
       }
     }
   }  
