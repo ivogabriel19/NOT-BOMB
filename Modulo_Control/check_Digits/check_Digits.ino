@@ -19,9 +19,9 @@
 bool flag_stop = false;
 unsigned long previousMillis = 0;
 
-int ctrlSegundero = 100; //Variable control actualizacion del segundero
+int ctrlSegundero = 1000; //Variable control actualizacion del segundero
 
-int contador[] = {0, 9, 1, 0}; // numeros del reloj -> {unidadSegundos, decenaSegundos, unidadMinutos, decenaMinutos}
+int contador[] = {0, 1, 1, 0, 1}; // numeros del reloj -> {unidadSegundos, decenaSegundos, unidadMinutos, decenaMinutos, unidadHoras}
 
 const int pinesDig[] = {dD, dC, dB, dA};  //pines escritura segmentos
 const int pinesAn[] = {anC, anB, anA};    //pines escritura anodos segmentos
@@ -42,7 +42,8 @@ const int bcdAn[][3] = {   //{C, B, A}
   {1, 0, 1}, // digito 1 - Y5
   {1, 0, 0}, // digito 2 - Y4
   {0, 1, 1}, // digito 3 - Y3
-  {0, 1, 0}  // digito 4 - Y2
+  {0, 1, 0}, // digito 4 - Y2
+  {0, 0, 1}  // digito 5 - Y1
 };
 
 void setup() {
@@ -100,11 +101,15 @@ void segundero(){
         contador[2]=9;
         contador[3]--;
         if(contador[3]<0){
-          contador[0]=0;
-          contador[1]=0;
-          contador[2]=0;
-          contador[3]=0;
-          tutifruti();  
+          contador[3] = 5;
+          contador[4]--;
+          if (contador[4]<0){
+            contador[0]=0;
+            contador[1]=0;
+            contador[2]=0;
+            contador[3]=0;
+            tutifruti();    
+          }
         }  
       }
     }
