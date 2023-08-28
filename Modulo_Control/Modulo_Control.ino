@@ -40,7 +40,7 @@ BluetoothSerial SerialBT;
 #define wire8 27
 
 float salto = 200;
-float err = 1.2 ;
+float err = 1.1 ;
 
 bool flag_stop = false;
 unsigned long previousMillis = 0;
@@ -90,6 +90,8 @@ void setup() {
   pinMode(dp ,OUTPUT);
   pinMode(p1 ,OUTPUT);
   pinMode(p2 ,OUTPUT);
+
+  digitalWrite(dp, LOW);
 }
 
 void loop() {
@@ -136,6 +138,7 @@ void segundero(){
             contador[1]=0;
             contador[2]=0;
             contador[3]=0;
+            contador[4]=0;
             tutifruti();    
           }
         }  
@@ -147,7 +150,6 @@ void segundero(){
 
 void refresh(){//Escribir displays
 
-  if(!flag_stop){ //Va por la actualizacion normal
     //Escribir cada digito del contador
     for(int dig=0 ; dig < (sizeof(contador)/sizeof(contador[0])) ; dig++){
       
@@ -167,19 +169,6 @@ void refresh(){//Escribir displays
         digitalWrite(pinesDig[pin], HIGH);
       }
     }
-  } else { //Si termino titila en 0
-    
-    while(true){
-      //Escribir cada digito del contador
-      // !!! el bcd7segmentos lo escribe la funcion que activa el flag_stop
-      for(int dig=0 ; dig < (sizeof(contador)/sizeof(contador[0])) ; dig++){
-        //Alimento cada anodo (declarados en pinesAn[])
-        for (int anodo=0 ; anodo < (sizeof(pinesAn)/sizeof(pinesAn[0])) ; anodo++){ //3 vueltas
-          digitalWrite(pinesAn[anodo], bcdAn[dig][anodo]);
-        }
-      }
-    }
-  }
 }
 
 void checkWires(){
@@ -208,8 +197,23 @@ void checkWires(){
 void tutifruti(){ //canta basta para mi basta para todos
   flag_stop = true;
   Serial.println("Stop!");
-  //escribo los segmentos en 0 (declarados en pinesDig[])
-  for (int pin=0 ; pin < (sizeof(pinesDig)/sizeof(pinesDig[0])) ; pin++){ //4vueltas
-    digitalWrite(pinesDig[pin], bcdDig[0][pin]);
+
+  titilacion();
+}
+
+void titilacion(){
+  unsigned long prev = 0;
+  unsigned long mark = 0;
+
+  while(true){
+    mark = millis();
+    
+    if(mark - prev < 500){
+      refresh();
+    }else{
+      delay(500);
+      prev=millis();;
+    }
+    
   }
 }
