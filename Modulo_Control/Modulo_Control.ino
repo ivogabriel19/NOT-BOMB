@@ -65,28 +65,30 @@ const int bcdDig[][4] = { //{D, C, B, A}
     {1,0,0,1}  //9
 };
 const int bcdAn[][3] = {   //{C, B, A}
-  {0, 0, 0},
-  {0, 0, 1},
-  {0, 1, 0}
+  {1, 0, 1}, // digito 1 - Y5
+  {1, 0, 0}, // digito 2 - Y4
+  {0, 1, 1}, // digito 3 - Y3
+  {0, 1, 0}  // digito 4 - Y2
 };
 
 void setup() {
   Serial.begin(115200);
   SerialBT.begin("ESP32_Mod Control");
   
-  for(int i = 0; i < (sizeof(pinesDig)/sizeof(pinesDig[0])) ; i++){
-    pinMode(pinesDig[i], OUTPUT);
+  for(int pin = 0; pin < (sizeof(pinesDig)/sizeof(pinesDig[0])) ; pin++){
+    pinMode(pinesDig[pin], OUTPUT);
   }
-  for(int i = 0; i < (sizeof(pinesAn)/sizeof(pinesAn[0])) ; i++){
-    pinMode(pinesAn[i], OUTPUT);
+  for(int pin = 0; pin < (sizeof(pinesAn)/sizeof(pinesAn[0])) ; pin++){
+    pinMode(pinesAn[pin], OUTPUT);
+  }
+  for(int pin = 0; pin < (sizeof(pinesWr)/sizeof(pinesWr[0])) ; pin++){
+    pinMode(pinesWr[pin], INPUT);
   }
 
   pinMode(seg ,OUTPUT);
-  pinMode(wireOK, INPUT_PULLUP);
-  pinMode(wire1, INPUT_PULLUP);
-  pinMode(wire2, INPUT_PULLUP);
-  pinMode(wire3, INPUT_PULLUP);
-  pinMode(wire4, INPUT_PULLUP);
+  pinMode(dp ,OUTPUT);
+  pinMode(p1 ,OUTPUT);
+  pinMode(p2 ,OUTPUT);
 }
 
 void loop() {
@@ -178,46 +180,24 @@ void refresh(){//Escribir displays
 void checkWires(){
   Serial.println("Segundero: " + String(ctrlSegundero));
 
-  static bool flag_wire1 = false;
-  static bool flag_wire2 = false;
-  static bool flag_wire3 = false;
-  static bool flag_wire4 = false;
+  static bool flag_wire[] = {0, false, false, false, false,
+                             false, false, false, false};
 
   if(!digitalRead(wireOK)){
     tutifruti();
     }
 
-  if(!flag_wire1){
-    if(!digitalRead(wire1)){
-        ctrlSegundero-=salto;
-        if(ctrlSegundero <= 0) ctrlSegundero = 50;
-        flag_wire1 = true;
+  for(int wire = 1; wire < (sizeof(pinesWr)/sizeof(pinesWr[0])) ; wire++){    // Recorre array de cables
+    if(!flag_wire[wire]){                                                     // Si todavia no salto el flag
+      if(!digitalRead(pinesWr[wire])){                                        // Entonces hace la lectura
+          flag_wire[wire] = true;                                             // Si detecta que no esta el cable activa el flag correspondiente
+          ctrlSegundero-=salto;                                               // Acelera el segundero
+          salto*=err;                                                         // Aumenta la variable de ajuste del segundero (asi al siguiente error lo acelera mas)
+          if(ctrlSegundero <= 0) ctrlSegundero = 50;                          // Si no queda mas para reducir lo fija en 50          
+          //Serial.println(" Wire "+ String(wire) +" detected!");
       }
-  }
-
-  if(!flag_wire2){
-    if(!digitalRead(wire2)){
-        ctrlSegundero-=salto;
-        if(ctrlSegundero <= 0) ctrlSegundero = 50;
-        flag_wire2 = true;
-      }
-  }
-
-  if(!flag_wire3){
-    if(!digitalRead(wire3)){
-        ctrlSegundero-=salto;
-        if(ctrlSegundero <= 0) ctrlSegundero = 50;
-        flag_wire3 = true;
-      }
-  }
-
-  if(!flag_wire4){
-    if(!digitalRead(wire4)){
-        ctrlSegundero-=salto;
-        if(ctrlSegundero <= 0) ctrlSegundero = 50;
-        flag_wire4 = true;
-      }
-  }
+    }
+  }  
 }
 
 void tutifruti(){ //canta basta para mi basta para todos
