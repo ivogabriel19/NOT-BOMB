@@ -13,35 +13,45 @@ BluetoothSerial SerialBT;
 
 
 //pines escritura segmentos
-#define dA 16
-#define dB 17
-#define dC 18
-#define dD 19
+#define dA  5
+#define dB 21
+#define dC 19
+#define dD 18
 
 //pines escritura anodos segmentos
-#define anA 21
-#define anB 22
-#define anC 23
+#define anA 16
+#define anB  4
+#define anC  2
 
-#define seg 2 //Built in LED
+#define seg  2 //Built in LED
+#define dp   17
+#define p1   22
+#define p2   23
 
-#define wireOK 35
-#define wire1 32
-#define wire2 33
-#define wire3 25
-#define wire4 26
+//pines deteccion cables
+#define wireOK 36
+#define wire1 39
+#define wire2 34
+#define wire3 35
+#define wire4 32
+#define wire5 33
+#define wire6 25
+#define wire7 26
+#define wire8 27
 
-#define salto 200
+float salto = 200;
+float err = 1.2 ;
 
 bool flag_stop = false;
 unsigned long previousMillis = 0;
 
 int ctrlSegundero = 1000; //Variable control actualizacion del segundero
 
-int contador[] = {0, 9}; // numeros del reloj -> {unidadSegundos, decenaSegundos}
+int contador[] = {0, 9, 3, 0}; // numeros del reloj -> {unidadSegundos, decenaSegundos, unidadMinutos, decenaMinutos}
 
 const int pinesDig[] = {dD, dC, dB, dA};  //pines escritura segmentos
 const int pinesAn[] = {anC, anB, anA};    //pines escritura anodos segmentos
+const int pinesWr[] = {wireOK, wire1, wire2, wire3, wire4, wire5, wire6, wire7, wire8}; //pines deteccion cables //En caso de agregar cables, extender manualmente el array de flags en la funcion checkWires()
 const int bcdDig[][4] = { //{D, C, B, A}
     {0,0,0,0}, //0
     {0,0,0,1}, //1
@@ -104,15 +114,25 @@ void segundero(){
   digitalWrite(seg, LEDstate);
   LEDstate = !LEDstate;
 
-  //incremento reloj
+  //decremento reloj
   contador[0]--;
   if(contador[0]<0) {
     contador[0]=9;
     contador[1]--;
     if(contador[1]<0){
-      contador[0]=0;
-      contador[1]=0;
-      tutifruti();
+      contador[1] = 9;
+      contador[2]--;
+      if(contador[2]<0){
+        contador[2]=9;
+        contador[3]--;
+        if(contador[3]<0){
+          contador[0]=0;
+          contador[1]=0;
+          contador[2]=0;
+          contador[3]=0;
+          tutifruti();  
+        }  
+      }
     }
   }
   //Serial.println("blink_segundero() " + String(num));
