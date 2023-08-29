@@ -124,14 +124,15 @@ void refresh(){//Escribir displays
     for(int dig=0 ; dig < (sizeof(contador)/sizeof(contador[0])) ; dig++){
 
       Serial.print(contador[dig]);
-      //Alimento el anodo correspondiente (declarados en pinesAn[])
-      for (int anodo=0 ; anodo < (sizeof(pinesAn)/sizeof(pinesAn[0])) ; anodo++){ //3 vueltas
-        digitalWrite(pinesAn[anodo], bcdAn[dig][anodo]);
-      }
-  
+      
       //escribo los segmentos correspondientes (declarados en pinesDig[])
       for (int pin=0 ; pin < (sizeof(pinesDig)/sizeof(pinesDig[0])) ; pin++){ //4vueltas
         digitalWrite(pinesDig[pin], bcdDig[contador[dig]][pin]);
+      }
+      
+      //Alimento el anodo correspondiente (declarados en pinesAn[])
+      for (int anodo=0 ; anodo < (sizeof(pinesAn)/sizeof(pinesAn[0])) ; anodo++){ //3 vueltas
+        digitalWrite(pinesAn[anodo], bcdAn[dig][anodo]);
       }
          
       //Apago los segmentos
